@@ -24,17 +24,3 @@
  
  ![微信白名单设置](http://mmbiz.qpic.cn/mmbiz_png/PiajxSqBRaEJsqKkSJGg4TLAxEIvWjtTfrHSbhE3zfbPzuuGzadu9FsWJuBNELsk1IuQucfx91ialTfpPhAF0grA/0?wx_fmt=png)
  
-
-/*==============================特殊说明===================================*/
-
- **如若想重写微信未安装情况**
- 
- 需要先实现
- 
-`- (void)weChatUninstalledHandler:(void(^)(void))blcok` 方法，
-
-然后再实现**发起支付**方法
-
-`- (void)payWithOrderInfomation:(id)orderInfo completionHander:(CPCompletionHandler) completion`
-
-/*=====================================================================*/
