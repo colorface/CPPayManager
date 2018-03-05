@@ -26,16 +26,6 @@
  ![微信白名单设置](http://mmbiz.qpic.cn/mmbiz_png/PiajxSqBRaEJsqKkSJGg4TLAxEIvWjtTfrHSbhE3zfbPzuuGzadu9FsWJuBNELsk1IuQucfx91ialTfpPhAF0grA/0?wx_fmt=png)
  */
 
-/*==============================特殊说明===================================*/
-
-/* 如若想重写微信未安装情况，需要先实现
-- (void)weChatUninstalledHandler:(void(^)(void))blcok 方法，
-然后再实现“发起支付”方法
-- (void)payWithOrderInfomation:(id)orderInfo completionHander:(CPCompletionHandler) completion; */
-
-/*=====================================================================*/
-
-
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "WXApi.h"
@@ -62,7 +52,7 @@ typedef NS_ENUM(NSUInteger, CPErrCode) {
  result handler // 回调结果处理
  状态码和错误信息，用户可根据实际情况做页面跳转及其他处理
  */
-typedef void(^CPCompletionHandler)(NSString *errStr, CPErrCode errCode);
+typedef void(^CPCompletionHandler)(NSString * _Nullable errStr, CPErrCode errCode);
 
 
 /**
@@ -74,7 +64,7 @@ typedef void(^CPCompletionHandler)(NSString *errStr, CPErrCode errCode);
 /**
  singleton // 单例管理
  */
-+ (instancetype)shareManager;
++ (instancetype _Nonnull)shareManager;
 
 
 /**
@@ -83,13 +73,13 @@ typedef void(^CPCompletionHandler)(NSString *errStr, CPErrCode errCode);
  @param appid 商户AppID
  注 ：此处仅微信需要注册，appid为微信注册id
  */
-- (void)registerApp:(NSString *)appid;
+- (void)registerApp:(NSString * _Nonnull)appid;
 
 
 /**
  处理跳转url，回到应用，需要在delegate中实现
  */
-- (BOOL)payHandleUrl:(NSURL *)url;
+- (BOOL)payHandleUrl:(NSURL * _Nonnull)url;
 
 
 /**
@@ -98,12 +88,15 @@ typedef void(^CPCompletionHandler)(NSString *errStr, CPErrCode errCode);
  @param orderInfo 传入订单信息,如果是字符串，则对应是跳转支付宝支付；如果传入PayReq 对象，这跳转微信支付,注意，不能传入空字符串或者nil
  @param completion 回调，有返回状态信息
  */
-- (void)payWithOrderInfomation:(id)orderInfo completionHander:(CPCompletionHandler) completion;
+- (void)payWithOrderInfomation:(nonnull id)orderInfo completionHander:(CPCompletionHandler _Nullable ) completion;
 
 /**
- 未安装微信的处理
+ 发起支付
 
- @param blcok 处理block
+ @param orderInfo 传入订单信息,如果是字符串，则对应是跳转支付宝支付；如果传入PayReq 对象，这跳转微信支付,注意，不能传入空字符串或者nil
+ @param unBlock 未安装微信时的处理
+ @param completion 回调，有返回状态信息
  */
-- (void)weChatUninstalledHandler:(void(^)(void))blcok;
+- (void)payWithOrderInfomation:(nonnull id)orderInfo weChatUninstalledHandler:(void(^_Nullable)(void)) unBlock completionHander:(CPCompletionHandler _Nullable )completion;
+
 @end

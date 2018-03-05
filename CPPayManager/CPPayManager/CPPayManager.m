@@ -13,15 +13,12 @@
 static NSString * const host_wx = @"pay";
 static NSString * const host_alipay = @"safepay";
 
-typedef void(^CPWXAppInstalledBlock)(void);
-
 @interface CPPayManager()<WXApiDelegate>
 {
     NSString *aliScheme; //支付宝对应URL Scheme
     NSString *wxScheme;  //微信对应URL Scheme
 }
-@property (nonatomic, copy) CPCompletionHandler completionHandler;
-@property (nonatomic, copy) CPWXAppInstalledBlock unInstallBlock;
+@property (nonatomic, copy, nullable) CPCompletionHandler completionHandler;
 @end
 
 @implementation CPPayManager
@@ -37,8 +34,6 @@ typedef void(^CPWXAppInstalledBlock)(void);
 }
 - (void)registerApp:(NSString *)appid
 {
-    NSAssert(appid, @"appid不能为空");
-    
     NSString *path = [[NSBundle mainBundle] pathForResource:@"Info" ofType:@"plist"];
     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
     NSArray *urlTypes = dict[@"CFBundleURLTypes"];
@@ -109,8 +104,16 @@ typedef void(^CPWXAppInstalledBlock)(void);
     return YES;
 }
 
-- (void)payWithOrderInfomation:(id)orderInfo completionHander:(CPCompletionHandler)completion
+-(void)payWithOrderInfomation:(id)orderInfo completionHander:(CPCompletionHandler)completion
 {
+    [self payWithOrderInfomation:orderInfo weChatUninstalledHandler:nil completionHander:completion];
+}
+
+- (void)payWithOrderInfomation:(id)orderInfo weChatUninstalledHandler:(void (^)(void))unBlock completionHander:(CPCompletionHandler)completion
+{
+    if (!orderInfo) {
+        return;
+    }
     if (completion) {
         self.completionHandler = completion;
     }
@@ -120,8 +123,7 @@ typedef void(^CPWXAppInstalledBlock)(void);
         if ([WXApi isWXAppInstalled]) {
             [WXApi sendReq:(PayReq *)orderInfo];
         }else {
-
-            !self.unInstallBlock ? [self actionMethod] : self.unInstallBlock();
+            !unBlock ?[self actionMethod]: unBlock();
         }
     }
     //支付宝
@@ -180,30 +182,25 @@ typedef void(^CPWXAppInstalledBlock)(void);
     }
 }
 
-- (void)weChatUninstalledHandler:(void(^)(void))blcok
-{
-    self.unInstallBlock = blcok;
-}
-
 #pragma - private Method
 //未安装微信默认弹窗
 - (void)actionMethod
 {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"微信未安装" message:@"是否从apple store下载?" preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *action1 = [UIAlertAction actionWithTitle:@"否" style:UIAlertActionStyleCancel handler:nil];
-    
+
     __weak UIAlertController *weakAlert = alert;
     UIAlertAction *action2 = [UIAlertAction actionWithTitle:@"是" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        
+
         [weakAlert dismissViewControllerAnimated:YES completion:^{
-            
+
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[WXApi getWXAppInstallUrl]] options:@{} completionHandler:nil];
         }];
-        
+
     }];
     [alert addAction:action1];
     [alert addAction:action2];
-    
+
     [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
 }
 
